@@ -6,7 +6,7 @@ class Rdv {
         this._priority = priority;
     }
 }
-
+/** */
 class GPPanelEvent extends HTMLElement {
     static get observedAttributes() {
         return ['name', 'message'];
@@ -133,8 +133,7 @@ class GPPanelEvent extends HTMLElement {
                 height: 40px;
                 font-size: 1rem;
                 font-weight: 500;
-                outline: none;
-                border: none;
+                outline: none;                
                 color: #fff;
                 background-color: var(--color1);
                 border-radius: 5px;
@@ -194,8 +193,8 @@ class GPPanelEvent extends HTMLElement {
                 border-radius: 5px;
                 width:100%;
                 height:100%;
-                top:0px;
-                left:0px;                              
+                top:0;
+                left:0;                              
                 background: rgba(0,0,0,0.33);                    
                 /*opacity:1;*/
            }                   
@@ -349,10 +348,7 @@ class GPPanelEvent extends HTMLElement {
 
     isDateValide(testDate) {
         let date_regex = /^\d{4}-\d{1,2}-\d{1,2}$/;
-        if ((date_regex.test(testDate))) {
-            return true;
-        }
-        return false;
+        return (date_regex.test(testDate));
     }
 
     getActiveEvent() {
