@@ -47,12 +47,13 @@ class GPEventRange {
 
 }
 
-const toDate = (_date) =>{
+const toDate = (_date) => {
     let date = _date.split("-");
     return new Date(date[0], date[1] - 1, date[2]);//YYY MM DD
 };
 
 class GPCalendar extends HTMLElement {
+
     static get observedAttributes() {
         return ['date', "start", "end"];
     }
@@ -61,6 +62,7 @@ class GPCalendar extends HTMLElement {
         super();
         this.shadow = this.attachShadow({mode: 'open'});
         this.eventsArr = [];
+        this.arrHolidays = [];
         this.bPress = false;
         this.startElement = null;
         this.endElement = null;
@@ -346,6 +348,9 @@ class GPCalendar extends HTMLElement {
                 /* Non-prefixed version, currently
                 supported by Chrome and Opera */
             }
+            .holidays{
+            background: #428686;
+            }
             /*.day:nth-child(7n + 1) {*/
             /*    border-left: 2px solid #f5f5f5;*/
             /*}           */
@@ -384,6 +389,10 @@ class GPCalendar extends HTMLElement {
         this.resetEvent();
     }
 
+    isHoliday = (date) => {
+        if (this.arrHolidays.length === 0) return;
+        return (this.arrHolidays.find(val => val.date === date) !== undefined);
+    }
     isToday = (day) => {
         return (day === new Date().getDate() && this._year === new Date().getFullYear() && this._month === new Date().getMonth());
     }
@@ -444,8 +453,8 @@ class GPCalendar extends HTMLElement {
 
             let today = this.isToday(i);
             if (today) {
-                this.getActiveDay(new Date(this._year, this._month-1, i));
-                this.updateEvents(new Date(this._year, this._month-1, i));
+                this.getActiveDay(new Date(this._year, this._month - 1, i));
+                this.updateEvents(new Date(this._year, this._month - 1, i));
             }
             sDays += `<div indx='${indx}' dDate="${this._year}-${(this._month + 1).zeroPad(2)}-${i.zeroPad(2)}" class="day ${today === true ? 'today' : ''} ${event === true ? 'event' : ''} ${weekend ? "weekend" : ''}" >${i}</div>`;
             indx++;
@@ -482,7 +491,7 @@ class GPCalendar extends HTMLElement {
             this._year--;
         }
         this.render();
-        this.updateEvents(new Date(this._year, this._month-1, 1));
+        this.updateEvents(new Date(this._year, this._month - 1, 1));
     }
 
     nextMonth() {
@@ -492,7 +501,7 @@ class GPCalendar extends HTMLElement {
             this._year++;
         }
         this.render();
-        this.updateEvents(new Date(this._year, this._month-1, 1));
+        this.updateEvents(new Date(this._year, this._month - 1, 1));
     }
 
     resetEvent() {
@@ -523,7 +532,7 @@ class GPCalendar extends HTMLElement {
     }
 
     getActiveDay(date) {
-       // const date = new Date(this._year, Number(this._month - 1), day);
+        // const date = new Date(this._year, Number(this._month - 1), day);
         const dayName = this.getDayName(date.getDate(), date, false);
         let sDate = dayName + " " + date.getDate() + " " + this.months[Number(this._month)] + " " + this._year;
         this.dispatchEvent(new CustomEvent('showDate', {
@@ -635,7 +644,7 @@ class GPCalendar extends HTMLElement {
             day.addEventListener("click", (e) => {
                 this.day = Number(e.target.innerText);
                 this._date = e.target.getAttribute('dDate')
-                this.tab=this._date.split('-');
+                this.tab = this._date.split('-');
                 this._month = Number(this.tab[1]) - 1;
                 this.getActiveDay(toDate(this._date));
                 this.startElement = e.target;
