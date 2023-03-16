@@ -5,22 +5,22 @@ class GPAlert extends HTMLElement {
 
     constructor(message = "Alert!") {
         super();
-        this.shadow = this.attachShadow({mode: 'open'});
+        this.shadow = this.attachShadow({ mode: 'open' });
         this.value = "center";
         this._header = "Message";
 
         if (message)
             this._message = message;
 
-        this._suffix = `<a  href="#close" class="btn-close" aria-hidden="true">×</a>`;
+        this._suffix = `<a  href="#" class="btn-close" aria-hidden="true">×</a>`;
     }
 
     connectedCallback() {
         this.shadow.innerHTML = `
         <style>
            :root {
-            --primary-clr: #cc9bfa;
-            --secondary-clr: #84399d;
+            --color1: #cc9bfa;
+            --color2: #84399d;
             --color3: #5f1380;
             --color4: #41095b;            
             }
@@ -80,16 +80,16 @@ class GPAlert extends HTMLElement {
                 display:flex;               
             }
             button {                
-                border: 1px solid var(--primary-clr);
+                border: 1px solid var(--color1);
                 border-radius: 5px;
                 background-color: transparent;
                 cursor: pointer;
-                color: var(--primary-clr);
+                color: var(--color1);
                 padding: 8px 18px;
             }            
             button:hover {
                 color: #fff;
-                background-color: var(--primary-clr);
+                background-color: var(--color1);
             }            
             .modal-body{
                 display:flex;
@@ -120,7 +120,7 @@ class GPAlert extends HTMLElement {
             
         </style>
         <div id ="myModal" class="modal collapse">
-            <div class="modal-header" >Alert<a  href="#close" class="btn-close" aria-hidden="true">×</a></div>
+            <div class="modal-header" >Alert<a  href="#" class="btn-close" aria-hidden="true">×</a></div>
             <div class="modal-body">Texte</div>
             <div class="modal-footer">
                 <button id="ok">OK</button>                

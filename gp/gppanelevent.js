@@ -312,7 +312,7 @@ class GPPanelEvent extends HTMLElement {
 
             event = {
                 'day': this.activeDay.getDate(),
-                'month': this.activeDay.getMonth() + 1,
+                'month': this.activeDay.getMonth() ,
                 "year": this.activeDay.getFullYear(),
                 "events": [events]
             }
@@ -384,17 +384,7 @@ class GPPanelEvent extends HTMLElement {
 
     attributeChangedCallback(name, oldvalue, newvalue) {
 
-        // if (name === "name" && oldvalue !== newvalue) {
-        //
-        //     this.name=newvalue;
-        //     if (this._titre)
-        //         this._titre.innerHtml = this.pref + this.name;
-        // }
-        // if (name === "message" && oldvalue !== newvalue) {
-        //     this.message=newvalue;
-        //     if (this._message)
-        //         this._message.innerText = this.message;
-        // }
+        
     }
 }
 

@@ -1,7 +1,56 @@
-Number.prototype.zeroPad = function(length) {
+Number.prototype.zeroPad = function (length) {
     length = length || 2; // defaults to 2 if no parameter is passed
-    return (new Array(length).join('0')+this).slice(length*-1);
- };
+    return (new Array(length).join('0') + this).slice(length * -1);
+};
+
+String.prototype.toTimestamp = function (date) {
+    date = date.split("-");
+    let newDate = new Date(date[0], date[1] - 1, date[2]);//YYY MM DD
+    return (newDate.getTime());
+}
+
+class GPEventRange {
+    constructor(start, end, title = "") {
+        this._id = this._id.toTimestamp(start);
+        this._start = start;
+        this._end = end;
+        this._title = title;
+    }
+
+    get start() {
+        return this._start;
+    }
+
+    set start(value) {
+        this._start = value;
+    }
+
+    get end() {
+        return this._end;
+    }
+
+    set end(value) {
+        this._end = value;
+    }
+
+    get title() {
+        return this._title;
+    }
+
+    set title(value) {
+        this._title = value;
+    }
+
+    get id() {
+        return this._id;
+    }
+
+}
+
+const toDate = (_date) =>{
+    let date = _date.split("-");
+    return new Date(date[0], date[1] - 1, date[2]);//YYY MM DD
+};
 
 class GPCalendar extends HTMLElement {
     static get observedAttributes() {
@@ -15,20 +64,20 @@ class GPCalendar extends HTMLElement {
         this.bPress = false;
         this.startElement = null;
         this.endElement = null;
-        this.activeDay = null;
+        //this.activeDay = null;
         this.daysName = ["Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.", "Dim."];
         this.months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 
         this.calendar = null;
         if (actualDate == null) this.nowDay = new Date(); else this.nowDay = actualDate;
         this._month = this.nowDay.getMonth();
-        this.year = this.nowDay.getFullYear();
+        this._year = this.nowDay.getFullYear();
         this.arrayDays = [];
     }
 
     setDate(date) {
         this.nowDay = date;
-        this.initCalendar();
+        this.render();
     }
 
     setStart(sDate) {
@@ -52,7 +101,7 @@ class GPCalendar extends HTMLElement {
         this.shadow.innerHTML = `   
         <head>
             <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous"/>
-         </head>           
+        </head>           
         <style>            
             :root {
                 --color1: #cc9bfa;
@@ -187,9 +236,7 @@ class GPCalendar extends HTMLElement {
             .weekend{                
                 color:  var(--color1);
             }           
-            .day:nth-child(7n + 1) {
-                border-left: 2px solid #f5f5f5;
-            }           
+            
             .prev-btn,
             .next-btn {
                 color: #4d4d4d;   
@@ -203,6 +250,7 @@ class GPCalendar extends HTMLElement {
                 position: relative;                
                 background-color: #e4c7ffc7;
                 border: 1px solid #4a266e;
+                border-radius: 4px;
             }
             .sel-active {
                 position: relative;
@@ -211,7 +259,8 @@ class GPCalendar extends HTMLElement {
             }            
             .today {
                 font-size: 1.1rem;
-                background:#f3e5f5;                
+                background:#f3e5f5b0;    
+                border-radius: 4px;            
             }                    
             .event::after {
                 content: "";
@@ -297,6 +346,9 @@ class GPCalendar extends HTMLElement {
                 /* Non-prefixed version, currently
                 supported by Chrome and Opera */
             }
+            /*.day:nth-child(7n + 1) {*/
+            /*    border-left: 2px solid #f5f5f5;*/
+            /*}           */
             
         </style>        
         <div class="calendar noselect">        
@@ -317,13 +369,13 @@ class GPCalendar extends HTMLElement {
         this.date = this.shadow.querySelector(".date");
         this.weekdays = this.shadow.querySelector(".weekdays");
         this.daysContainer = this.shadow.querySelector(".days");
-
+        //
         this.prev = this.shadow.querySelector(".prev");
         this.next = this.shadow.querySelector(".next");
         //
         this.todayBtn = this.shadow.querySelector(".today-btn");
         this.getEvents();
-        this.initCalendar();
+        this.render();
         this.initEvent();
         this.unSelect();
     }
@@ -333,28 +385,37 @@ class GPCalendar extends HTMLElement {
     }
 
     isToday = (day) => {
-        return (day === new Date().getDate() && this.year === new Date().getFullYear() && this._month === new Date().getMonth());
+        return (day === new Date().getDate() && this._year === new Date().getFullYear() && this._month === new Date().getMonth());
     }
 
     isEventDay = (day) => {
         let obj = this.eventsArr.find((val) => {
-            return (val.day === day && val.month === this._month + 1 && val.year === this.year);
+            return (val.day === day && val.month === this._month && val.year === this._year);
         });
         return (obj !== undefined);
     }
-    function
 
-    updateEvents(day, month) {
-        let event = this.eventsArr.find(val => val.day === day && val.month === month && val.year === this.year);
-        this.dispatchEvent(new CustomEvent('onEvent', {
-            bubbles: true, detail: {value: event}
-        }));
+    updateEvents(date) {
+        let event = this.eventsArr.find(val => val.day === date.getDate() && val.month === date.getMonth() && val.year === date.getFullYear());
+        let index = -1
+
+        if (this.startElement !== null) {
+            index = this.startElement.getAttribute("indx");
+            this.dispatchEvent(new CustomEvent('onEvent', {
+                bubbles: true, detail: {value: event, index: index}
+            }));
+        }
+
     }
 
-    initCalendar() {
-        this.firstDay = new Date(this.year, this._month, 1);
-        this.prevDay = new Date(this.year, this._month, 0);
-        this.presentDay = new Date(this.year, (this._month + 1), 0);
+    renderEvents() {
+
+    }
+
+    render() {
+        this.firstDay = new Date(this._year, this._month, 1);
+        this.prevDay = new Date(this._year, this._month, 0);
+        this.presentDay = new Date(this._year, (this._month + 1), 0);
         //
         const nbPrevDays = this.prevDay.getDate();
         const nbNowDay = this.presentDay.getDate();
@@ -369,37 +430,33 @@ class GPCalendar extends HTMLElement {
         if (offset === 0) offset = 7;
 
         this.createDaysName();
-        this.date.innerHTML = this.months[this._month] + " " + this.year;
+        this.date.innerHTML = this.months[this._month] + " " + this._year;
         let sDays = ``;
-
-        for (let x = day; x <= nbPrevDays; x++) {
-            sDays += `<div monthDay="${this._month}" class="day prev-date">${x}</div>`;
+        let indx = 0;
+        for (let i = day; i <= nbPrevDays; i++) {
+            sDays += `<div indx='${indx}' dDate="${this._year}-${(this._month).zeroPad(2)}-${i.zeroPad(2)}" class="day prev-date">${i}</div>`;
+            indx++;
         }
         for (let i = 1; i <= nbNowDay; i++) {
             //check if event is present on that day
             const weekend = this.isWeekend(i, this.nowDay);
             let event = this.isEventDay(i);
-            this.activeDay = i;
+
             let today = this.isToday(i);
             if (today) {
-                this.getActiveDay(i);
-                this.updateEvents(i, this._month);
+                this.getActiveDay(new Date(this._year, this._month-1, i));
+                this.updateEvents(new Date(this._year, this._month-1, i));
             }
-            sDays += `<div monthDay="${this._month + 1}" class="day ${today === true ? 'today' : ''} ${event === true ? 'event' : ''} ${weekend ? "weekend" : ''}" >${i}</div>`;
+            sDays += `<div indx='${indx}' dDate="${this._year}-${(this._month + 1).zeroPad(2)}-${i.zeroPad(2)}" class="day ${today === true ? 'today' : ''} ${event === true ? 'event' : ''} ${weekend ? "weekend" : ''}" >${i}</div>`;
+            indx++;
         }
-        for (let j = 1; j <= offset; j++) {
-            sDays += `<div monthDay="${this._month + 2}" class="day next-date">${j}</div>`;
+        for (let i = 1; i <= offset; i++) {
+            sDays += `<div indx='${indx}' dDate="${this._year}-${(this._month + 2).zeroPad(2)}-${i.zeroPad(2)}" class="day next-date">${i}</div>`;
+            indx++;
         }
         this.daysContainer.innerHTML = sDays;
         this.days = this.shadow.querySelectorAll(".day");
         this.events = this.shadow.querySelectorAll(".event");
-        let arrDaysTemp = [...this.days];
-        for (let i = 0; i < arrDaysTemp.length; i++) {
-            let item = {
-                index: i, year: this.year, month: arrDaysTemp[i].getAttribute('monthDay'), day: arrDaysTemp[i].innerText
-            }
-            this.arrayDays.push(item);
-        }
         this.addDayListener();
     }
 
@@ -414,7 +471,7 @@ class GPCalendar extends HTMLElement {
     }
 
     isWeekend = (day, date) => {
-        let d = new Date(this.year, this._month, day).getDay();
+        let d = new Date(this._year, this._month, day).getDay();
         return (d === 0 || d === 6);
     }
 
@@ -422,20 +479,20 @@ class GPCalendar extends HTMLElement {
         this._month--;
         if (this._month < 0) {
             this._month = 11;
-            this.year--;
+            this._year--;
         }
-        this.initCalendar();
-        this.updateEvents(1, this._month);
+        this.render();
+        this.updateEvents(new Date(this._year, this._month-1, 1));
     }
 
     nextMonth() {
         this._month++;
         if (this._month > 11) {
             this._month = 0;
-            this.year++;
+            this._year++;
         }
-        this.initCalendar();
-        this.updateEvents(1, this._month);
+        this.render();
+        this.updateEvents(new Date(this._year, this._month-1, 1));
     }
 
     resetEvent() {
@@ -456,8 +513,8 @@ class GPCalendar extends HTMLElement {
         });
         this.todayBtn.addEventListener("click", () => {
             this._month = this.nowDay.getMonth();
-            this.year = this.nowDay.getFullYear();
-            this.initCalendar();
+            this._year = this.nowDay.getFullYear();
+            this.render();
         });
     }
 
@@ -465,10 +522,10 @@ class GPCalendar extends HTMLElement {
         return this.eventsArr;
     }
 
-    getActiveDay(day) {
-        const date = new Date(this.year, this._month, day);
-        const dayName = this.getDayName(day, date, false);
-        let sDate = dayName + " " + day + " " + this.months[this._month] + " " + this.year;
+    getActiveDay(date) {
+       // const date = new Date(this._year, Number(this._month - 1), day);
+        const dayName = this.getDayName(date.getDate(), date, false);
+        let sDate = dayName + " " + date.getDate() + " " + this.months[Number(this._month)] + " " + this._year;
         this.dispatchEvent(new CustomEvent('showDate', {
             bubbles: true, detail: {value: sDate, date: date}
         }));
@@ -477,13 +534,13 @@ class GPCalendar extends HTMLElement {
     toDay() {
         const date = new Date();
         const dayName = this.getDayName(date.getDate(), date, false);
-        let sDate = dayName + " " + date.getDate() + " " + this.months[this._month] + " " + this.year;
+        let sDate = dayName + " " + date.getDate() + " " + this.months[this._month] + " " + this._year;
         this.dispatchEvent(new CustomEvent('showDate', {
-            bubbles: true, detail: {value: sDate, date:date}
+            bubbles: true, detail: {value: sDate, date: date}
         }));
     }
 
-    unSelect(bExcept = false) {
+    unSelect() {
         for (let i = 0; i < this.days.length; i++) {
             this.days[i].classList.remove("sel-active");
             this.days[i].classList.remove("active");
@@ -495,15 +552,10 @@ class GPCalendar extends HTMLElement {
             bubbles: true, detail: {value: text}
         }));
     }
-     
+
     setSelection() {
-        let startMonth = Number(this.startElement?.getAttribute('monthDay')).zeroPad(2);
-        let startDay = Number(this.startElement?.innerText).zeroPad(2);
-        let endMonth = Number(this.endElement?.getAttribute('monthDay')).zeroPad(2);
-        let endDay = Number(this.endElement?.innerText).zeroPad(2);
-        let startDate=`${this.year}-${startMonth}-${startDay}`;
-        let endDate=`${this.year}-${endMonth}-${endDay}`;
-        if (startMonth === null) return;
+        let startDate = this.startElement?.getAttribute('dDate');
+        let endDate = this.endElement?.getAttribute('dDate');
         this.dispatchEvent(new CustomEvent('onSelection', {
             bubbles: true, detail: {start: startDate, end: endDate}
         }));
@@ -513,20 +565,38 @@ class GPCalendar extends HTMLElement {
         localStorage.setItem("events", JSON.stringify(this.eventsArr));
     }
 
+    async loadEvents(json_file) {
+        this.eventsArr = [];
+        localStorage.events = [];
+        try {
+            let rep = await fetch(json_file);
+            this.eventsArr = await rep.json();
+
+            this.saveEvents();// en localStorage
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     //function to get events from local storage
     getEvents() {
         this.eventsArr = [];
+
         //check if events are already saved in local storage then return event else nothing
         if (localStorage.getItem("events") === null) {
             return;
         }
-        this.eventsArr.push(...JSON.parse(localStorage.getItem("events")));
+        try {
+            this.eventsArr.push(...JSON.parse(localStorage.getItem("events")));
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     detectIndices() {
         this.days = this.shadow.querySelectorAll(".day");
-        let start = Number(this.getDayByText(this.startElement).index);
-        let end = Number(this.getDayByText(this.endElement).index);
+        let start = Number(this.startElement.getAttribute("indx"));
+        let end = Number(this.endElement.getAttribute("indx"));
 
         if (start === end) {
             this.unSelect();
@@ -539,11 +609,10 @@ class GPCalendar extends HTMLElement {
             }
             this.endElement.classList.add("active");
         }
-        //this.log("start: " + Math.min(start, end) + "  end: " + Math.max(start, end));
     }
 
     addDayListener() {
-        //const days = document.querySelectorAll(".day");
+
         this.days.forEach((day) => {
             day.addEventListener('mousedown', (e) => {
                 this.bPress = true;
@@ -561,24 +630,22 @@ class GPCalendar extends HTMLElement {
                 this.endElement = e.target;
                 this.setSelection();
                 this.bPress = false;
-                this.startElement = null;
-                this.endElement = null;
                 e.target.classList.add("active");
             });
             day.addEventListener("click", (e) => {
-                this._month = e.target.getAttribute('monthDay') - 1;
-                this.getActiveDay(e.target.innerHTML);
+                this.day = Number(e.target.innerText);
+                this._date = e.target.getAttribute('dDate')
+                this.tab=this._date.split('-');
+                this._month = Number(this.tab[1]) - 1;
+                this.getActiveDay(toDate(this._date));
                 this.startElement = e.target;
                 this.endElement = e.target;
                 this.detectIndices();
-                this.activeDay = Number(e.target.innerHTML);
                 this.unSelect();
                 //
                 e.target.classList.add("active");
-                let d = Number(e.target.innerText);
-                let m = Number(e.target.getAttribute('monthDay'));
-                this.updateEvents(d, m);
 
+                this.updateEvents(toDate(this._date));
             });
         });
     }
@@ -586,7 +653,7 @@ class GPCalendar extends HTMLElement {
     attributeChangedCallback(name, oldvalue, newvalue) {
         if (name === "date" && oldvalue !== newvalue) {
             this.setDate(newvalue);
-            this.initCalendar();
+            this.render();
         }
         if (name === "start" && oldvalue !== newvalue) {
             this.setStart(newvalue);
@@ -597,41 +664,52 @@ class GPCalendar extends HTMLElement {
     }
 
     getDayByText(elem) {
-        let m = elem.getAttribute("monthDay");
+        let m = elem.getAttribute("dDate");
         let d = elem.innerText;
-        let obj = this.arrayDays.find(val => val.day === d && val.month === m);
-        return obj;
+        return (this.arrayDays.find(val => val.day === d && val.month === m));
+
     }
 
     findEvent(event) {
-        return this.eventsArr.find((val) => val.day === event.day && val.month === event.month && val.year === event.year);
+        return this.eventsArr.find((val) => val.day === event.day && val.month === event.month && val.year === event._year);
+    }
+
+    removeEventByTitle(event) {
+        let messages = event.message.split(" - ");
+        let _dateS = messages[0].split("-");
+        let _event = this.eventsArr.find((val) => val.day === Number(_dateS[2]) && val.month === Number(_dateS[1]) - 1 && val.year === Number(_dateS[0]));
+        let _index = _event.events.findIndex((val) => val.title === event.name);
+        if (_index === -1) return;
+        _event.events.splice(_index, 1);
+        if (_event.events.length === 0) {
+            _index = this.eventsArr.findIndex((val) => val.day === Number(_dateS[2]) && val.month === Number(_dateS[1]) - 1 && val.year === Number(_dateS[0]));
+            this.eventsArr.splice(_index, 1);
+        }
     }
 
     addEvent(event) {
         if (event === null) return;
 
         let _ev = this.findEvent(event);
-        if (_ev === undefined){
+        if (_ev === undefined) {
             this.eventsArr.push(event);
-        }else {
-            let _events=event.events;
+        } else {
+            let _events = event.events;
             _ev.events.push(_events[0]);
         }
         this.saveEvents();
-        this.initCalendar();
-
+        this.startElement.classList.add("event");
     }
 
-    deleteEvent(event){
-        if (event === null) return
-        let _index = this.eventsArr.findIndex(event);
-        if (_index===-1) return;
-        this.eventsArr.splice(_index,1);
+    deleteEvent(event) {
+        if (event === null) return;
+        event.remove();
+        this.startElement.classList.remove("event");
+        this.removeEventByTitle(event);
         this.saveEvents();
-        this.initCalendar();
     }
 
-    setReadonly( readonly ) {
+    setReadonly(readonly) {
         this.readonly = readonly;
         if (this.readonly) {
 
