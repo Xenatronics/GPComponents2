@@ -115,5 +115,4 @@ class GPEvent extends HTMLElement {
         }
     }
 }
-
 customElements.define("gp-event", GPEvent);

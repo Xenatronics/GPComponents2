@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+<<<<<<< HEAD
 
 <head>
     <meta charset="UTF-8">
@@ -23,10 +24,23 @@
 <body>
 
 <gp-modal id="modal"></gp-modal>
+=======
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link   rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+            integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+            crossorigin="anonymous"  referrerpolicy="no-referrer"   />
+    <link href="css/style.css" rel="stylesheet">
+    <script src="gp/gpcalendar.js"></script>
+</head>
+<body>
+>>>>>>> 8f4f6f5 (Version 1.2)
 <div class="container">
     <div class="left">
         <gp-calendar id="calendar"></gp-calendar>
     </div>
+<<<<<<< HEAD
     <div class="right">
         <gp-panel-event></gp-panel-event>
     </div>
@@ -78,4 +92,21 @@
 </script>
 </body>
 
+=======
+</div>
+<script>
+    let calendar = document.querySelector("#calendar");
+    calendar.addEventListener("showDate", (e) => {
+        console.log(e.detail.value);
+    })
+    calendar.addEventListener('onEvent', (e) => {
+        console.log(e.detail.value);
+    });
+    calendar.toDay();
+    calendar.addEventListener("onSelection", (e) => {
+        console.log("start: ", e.detail.start, "end: ", e.detail.end);
+    });
+</script>
+</body>
+>>>>>>> 8f4f6f5 (Version 1.2)
 </html>

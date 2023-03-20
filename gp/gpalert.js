@@ -5,7 +5,7 @@ class GPAlert extends HTMLElement {
 
     constructor(message = "Alert!") {
         super();
-        this.shadow = this.attachShadow({ mode: 'open' });
+        this.shadow = this.attachShadow({mode: 'open'});
         this.value = "center";
         this._header = "Message";
 
@@ -136,27 +136,65 @@ class GPAlert extends HTMLElement {
         this.setMessage(this._message);
 
         this._ok.addEventListener("click", () => {
-            this.dispatchEvent(new Event('onOK'));
             this.hide();
+            this.dispatchEvent(new Event('onOK'));
         });
 
         this.btn_close.addEventListener("click", () => {
-            this.dispatchEvent(new Event('onOK'));
             this.hide();
+            //this.dispatchEvent(new Event('onOK'));
         });
         this.init();
     }
 
-    setPosition(value) {
-        this.value = value;
+    setPosition(_position) {
+
+        switch (_position) {
+            case "left":
+                this._modal.style.left = "20%";
+                this._modal.style.right = "50%";
+                this.transX = "-50%";
+                break;
+            case "right":
+                this._modal.style.left = "80%";
+                this._modal.style.right = "50%";
+                this.transX = "-50%";
+                break;
+            case "top":
+                this._modal.style.top = "20%";
+                this.transY = "-50%";
+                break;
+            case "bottom":
+                this._modal.style.top = "80%";
+                this._modal.style.bottom = "50%";
+                this.transY = "-50%";
+                break;
+            case "centerH":
+                this._modal.style.left = "50%";
+                this.transX = "-50%";
+                break;
+            case "centerV":
+                this._modal.style.top = "50%";
+                this.transY = "-50%";
+                break;
+            case "center":
+                this._modal.style.top = "50%";
+                this._modal.style.left = "50%";
+                this.transX = "-50%";
+                this.transY = "-50%";
+                break;
+        }
+        this._modal.style.transform = `translate(${this.transX},${this.transY})`;
     }
 
     show() {
+        this.dispatchEvent(new Event('onShow'));
         this._modal.classList.add("show");
         this._modal.classList.remove("collapse");
     }
 
     hide() {
+        this.dispatchEvent(new Event('onHide'));
         this._modal.classList.remove("show");
         this._modal.classList.add("collapse");
     }
@@ -172,16 +210,17 @@ class GPAlert extends HTMLElement {
     }
 
     setHeader(header) {
+        this.btn_close.removeEventListener("click", () => {
+        }, false);
         this.header.innerHTML = header + this._suffix;
-    }
-
-    setMessage(message) {
-        this.message.innerText = message;
         this.btn_close = this.shadow.querySelector('.btn-close');
         this.btn_close.addEventListener("click", () => {
             this.hide();
         });
+    }
 
+    setMessage(message) {
+        this.message.innerText = message;
     }
 
     attributeChangedCallback(name, oldvalue, newvalue) {
@@ -195,7 +234,5 @@ class GPAlert extends HTMLElement {
             this.setMessage(newvalue);
         }
     }
-
 }
-
 customElements.define("gp-alert", GPAlert);

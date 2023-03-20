@@ -6,6 +6,7 @@ class Rdv {
         this._priority = priority;
     }
 }
+
 /** */
 class GPPanelEvent extends HTMLElement {
     static get observedAttributes() {
@@ -17,7 +18,6 @@ class GPPanelEvent extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this._titre = null;
         this._message = null;
-        this._activeEvent = null;
     }
 
     connectedCallback() {
@@ -51,11 +51,14 @@ class GPPanelEvent extends HTMLElement {
                 text-transform: capitalize;
            }            
            .events {
+                display: block;
+                position:relative;
                 width: 100%;
                 height: 100%;
                 max-height: 600px;
                 overflow-x: hidden;
-                overflow-y: auto;                
+                overflow-y: auto;   
+                z-index: 0;             
            }           
            .add-event-wrapper {
                 position: absolute;
@@ -247,15 +250,13 @@ class GPPanelEvent extends HTMLElement {
     initEvent() {
         this.eventsContainer.addEventListener("click", (e) => {
             if (e.target.nodeName === "GP-EVENT") {
-                this._activeEvent = e.target;
-                e.target.addEventListener("onDelete", () => {
-                    this.dispatchEvent(new CustomEvent('onDelete', {
-                        bubbles: true, detail: {value: this._activeEvent}
-                    }));
-                });
+                //this._activeEvent = e.target;
+                //e.target.addEventListener("onDelete", () => {
+                this.dispatchEvent(new CustomEvent('onDelete', {
+                    bubbles: true, detail: {value: e.target}
+                }));
             }
         });
-
         this.addEventBtn.addEventListener("click", () => {
             this.addEventWrapper.classList.toggle("active");
         });
@@ -312,15 +313,13 @@ class GPPanelEvent extends HTMLElement {
 
             event = {
                 'day': this.activeDay.getDate(),
-                'month': this.activeDay.getMonth() ,
+                'month': this.activeDay.getMonth(),
                 "year": this.activeDay.getFullYear(),
                 "events": [events]
             }
-
             this.dispatchEvent(new CustomEvent('onAdd', {
                 bubbles: true, detail: {value: event}
             }));
-
             this.addEventWrapper.classList.toggle("active");
         });
 
@@ -376,16 +375,14 @@ class GPPanelEvent extends HTMLElement {
 
     setSelection(ev) {
         if (ev === null) return;
-        this.startDate = ev.detail.start;
-        this.startEnd = ev.detail.end;
+        //
+        //this.startEnd = ev.detail.end;
         this.addEventFrom.value = ev.detail.start;
         this.addEventTo.value = ev.detail.end;
     }
-
     attributeChangedCallback(name, oldvalue, newvalue) {
 
-        
+
     }
 }
-
 customElements.define("gp-panel-event", GPPanelEvent);

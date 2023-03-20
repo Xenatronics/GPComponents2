@@ -6,6 +6,8 @@
     --color5: rgba(235, 211, 248, 0.71);
     --carre: 14.28%;
     --w: 100%;
+    --gapx:10px;
+    --nb:1;
 }
 * {
     margin: 0;
@@ -44,6 +46,7 @@ body {
     background-color: #373c4f;
 }
 .left {
+    position: relative;
     width: 65%;
     /*padding: 10px 5px 10px 10px;*/
 }
@@ -51,6 +54,30 @@ body {
     position: relative;
     border-radius: 4px;
     width: 100%;
-
     padding:  0;
+}
+
+.log{
+    position: relative;
+    margin-left : 20px;
+    top:80px;
+    padding: 10px;
+    background: #cc9bfa;
+    color: #5f1380;
+}
+
+button{
+    position: relative;
+    top: 80px;
+    height: 50px;
+    left:0px;
+    color:#5f1380;
+    padding: 4px 22px;
+}
+
+.center{
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    align-items: center;
 }

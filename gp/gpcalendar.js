@@ -114,6 +114,8 @@ class GPCalendar extends HTMLElement {
                 --color4: #31186a;
                 --h:45px;
                 --w:100%;
+                --gapx:5px;
+                --nb:2;
             }
             * {                
                 margin: 0;
@@ -228,7 +230,7 @@ class GPCalendar extends HTMLElement {
             .day {
                 display: flex;
                 flex-direction: column;
-                align-items: flex-end;
+                align-items: flex-start;
                 padding: 3px;
                 width: var(--carre);
                 height:100px;               
@@ -237,8 +239,7 @@ class GPCalendar extends HTMLElement {
             }
             .weekend{                
                 color:  var(--color1);
-            }           
-            
+            }            
             .prev-btn,
             .next-btn {
                 color: #4d4d4d;   
@@ -263,40 +264,36 @@ class GPCalendar extends HTMLElement {
                 font-size: 1.1rem;
                 background:#f3e5f5b0;    
                 border-radius: 4px;            
-            }                    
-            .event::after {
-                content: "";
-                position: absolute;
+            }   
+            .event{
+                text-align: left;
+                position: relative;
+                display: flex;
+                align-items: start;   
+                top:50%;
                 bottom: 10%;
-                left: -1px;
-                width: 102%;        
-                height: 10px;
-                background-color: #cc9bfa;
-                z-index:99;
+                width: calc(var(--nb)*100%);      
+                left: 0;   
+                height: 20px;
+                filter: brightness(4);
+                background-color: var(--color2);
+                color: white;
+                z-index: 1;      
+                border-radius: 8px;         
             }
-            .eventE::after {
+            .event:hover{
+                /*background-color: tomato;*/
+                filter: brightness(.9);
+                cursor:pointer;                
+            }     
+            .event::after, .event::before{
+                clear: both;
                 content: "";
-                position: absolute;
-                bottom: 10%;
-                right: 5px;
-                width: 94%;
-                margin-left:5px;
-                height: 10px;
-                border-top-right-radius: 8px;
-                border-bottom-right-radius: 8px;                
-                background-color: #cc9bfa;
-            }
-            .eventS::after {
-                content: "";
-                position: absolute;
-                bottom: 10%;
-                left: 5px;
-                width: 94%;        
-                height: 10px;
-                border-top-left-radius: 8px;
-                border-bottom-left-radius: 8px;                
-                background-color: #cc9bfa;
-            }                       
+                display: table;
+            }                   
+            .day-inner{
+            
+            }                                   
             .events {
                 width: 100%;
                 height: 100%;
@@ -305,16 +302,9 @@ class GPCalendar extends HTMLElement {
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
-                padding-left: 4px;
-            }
-            .event {
-                position: relative;                                  
-            }
-            .event:hover::after{
-                cursor: pointer;
-                background:var(--color3);
-            }
-           button {
+                padding-left: 4px;                
+            }          
+            button {
                 padding: 5px 10px;
                 border: 1px solid var(--color1);
                 border-radius: 5px;
@@ -349,7 +339,7 @@ class GPCalendar extends HTMLElement {
                 supported by Chrome and Opera */
             }
             .holidays{
-            background: #428686;
+                background: #523e81;
             }
             /*.day:nth-child(7n + 1) {*/
             /*    border-left: 2px solid #f5f5f5;*/
@@ -384,7 +374,6 @@ class GPCalendar extends HTMLElement {
         this.initEvent();
         this.unSelect();
     }
-
     disconnectedCallback() {
         this.resetEvent();
     }
@@ -397,12 +386,16 @@ class GPCalendar extends HTMLElement {
         return (day === new Date().getDate() && this._year === new Date().getFullYear() && this._month === new Date().getMonth());
     }
 
-    isEventDay = (day) => {
+    isEventDay = (date) => {
         let obj = this.eventsArr.find((val) => {
-            return (val.day === day && val.month === this._month && val.year === this._year);
+            return (val.day === date.getDate() && val.month === date.getMonth()+1 && val.year === date.getFullYear());
         });
         return (obj !== undefined);
     }
+    getEventDayTitle = (date) => {
+        return this.eventsArr.find((val) => (val.day === date.getDate() && val.month === date.getMonth()+1 && val.year === date.getFullYear()));
+    }
+
 
     updateEvents(date) {
         let event = this.eventsArr.find(val => val.day === date.getDate() && val.month === date.getMonth() && val.year === date.getFullYear());
@@ -417,9 +410,6 @@ class GPCalendar extends HTMLElement {
 
     }
 
-    renderEvents() {
-
-    }
 
     render() {
         this.firstDay = new Date(this._year, this._month, 1);
@@ -441,27 +431,34 @@ class GPCalendar extends HTMLElement {
         this.createDaysName();
         this.date.innerHTML = this.months[this._month] + " " + this._year;
         let sDays = ``;
-        let indx = 0;
+        let index = 0;
         for (let i = day; i <= nbPrevDays; i++) {
-            sDays += `<div indx='${indx}' dDate="${this._year}-${(this._month).zeroPad(2)}-${i.zeroPad(2)}" class="day prev-date">${i}</div>`;
-            indx++;
+            let _date=new Date(this._year, this._month - 2, i);
+            let isEvent = this.isEventDay(_date);
+            sDays += `<div indx='${index}' dDate="${this._year}-${(this._month).zeroPad(2)}-${i.zeroPad(2)}" class="day prev-date">${i}<div class="day-inner ${isEvent === true ? 'event' : ''} "></div></div>`;
+            index++;
         }
         for (let i = 1; i <= nbNowDay; i++) {
             //check if event is present on that day
+            let _date=new Date(this._year, this._month - 1, i);
             const weekend = this.isWeekend(i, this.nowDay);
-            let event = this.isEventDay(i);
-
+            let isEvent = this.isEventDay(_date);
+            if (isEvent){
+                let _event=this.getEventDayTitle(_date);
+            }
             let today = this.isToday(i);
             if (today) {
-                this.getActiveDay(new Date(this._year, this._month - 1, i));
-                this.updateEvents(new Date(this._year, this._month - 1, i));
+                this.getActiveDay(_date);
+                this.updateEvents(_date);
             }
-            sDays += `<div indx='${indx}' dDate="${this._year}-${(this._month + 1).zeroPad(2)}-${i.zeroPad(2)}" class="day ${today === true ? 'today' : ''} ${event === true ? 'event' : ''} ${weekend ? "weekend" : ''}" >${i}</div>`;
-            indx++;
+            sDays += `<div indx='${index}' dDate="${this._year}-${(this._month + 1).zeroPad(2)}-${i.zeroPad(2)}" class="day ${today === true ? 'today' : ''} ${weekend ? "weekend" : ''}" >${i}<div class="day-inner ${isEvent === true ? 'event' : ''} "></div></div>`;
+            index++;
         }
         for (let i = 1; i <= offset; i++) {
-            sDays += `<div indx='${indx}' dDate="${this._year}-${(this._month + 2).zeroPad(2)}-${i.zeroPad(2)}" class="day next-date">${i}</div>`;
-            indx++;
+            let _date=new Date(this._year, this._month, i);
+            let isEvent = this.isEventDay(_date);
+            sDays += `<div indx='${index}' dDate="${this._year}-${(this._month + 2).zeroPad(2)}-${i.zeroPad(2)}" class="day next-date">${i}<div class="day-inner ${isEvent === true ? 'event' : ''} "></div></div>`;
+            index++;
         }
         this.daysContainer.innerHTML = sDays;
         this.days = this.shadow.querySelectorAll(".day");
@@ -534,7 +531,7 @@ class GPCalendar extends HTMLElement {
     getActiveDay(date) {
         // const date = new Date(this._year, Number(this._month - 1), day);
         const dayName = this.getDayName(date.getDate(), date, false);
-        let sDate = dayName + " " + date.getDate() + " " + this.months[Number(this._month)] + " " + this._year;
+        let sDate = dayName + " " + date.getDate() + " " + this.months[Number(date.getMonth())] + " " + date.getFullYear();
         this.dispatchEvent(new CustomEvent('showDate', {
             bubbles: true, detail: {value: sDate, date: date}
         }));
@@ -543,7 +540,7 @@ class GPCalendar extends HTMLElement {
     toDay() {
         const date = new Date();
         const dayName = this.getDayName(date.getDate(), date, false);
-        let sDate = dayName + " " + date.getDate() + " " + this.months[this._month] + " " + this._year;
+        let sDate = dayName + " " + date.getDate() + " " + this.months[date.getMonth()] + " " + date.getFullYear();
         this.dispatchEvent(new CustomEvent('showDate', {
             bubbles: true, detail: {value: sDate, date: date}
         }));
@@ -612,10 +609,10 @@ class GPCalendar extends HTMLElement {
             this.endElement.classList.add("active");
             this.startElement.classList.add("active");
         } else {
-            //this.startElement.classList.add("active")
             for (let i = Math.min(start, end); i < Math.max(start, end); i++) {
                 this.days[i].classList.add("sel-active");
             }
+            this.startElement.classList.add("sel-active");
             this.endElement.classList.add("active");
         }
     }
@@ -624,36 +621,51 @@ class GPCalendar extends HTMLElement {
 
         this.days.forEach((day) => {
             day.addEventListener('mousedown', (e) => {
+                let elem = e.target;
+                if (elem.classList.contains("day-inner"))
+                    elem = e.target.parentElement;
                 this.bPress = true;
-                this.startElement = e.target;
-                this.endElement = e.target;
+                this.startElement = elem;
+                this.endElement = elem;
             });
             day.addEventListener('mouseover', (e) => {
+                let elem = e.target;
+                if (elem.classList.contains("day-inner")) {
+                    elem = e.target.parentElement;
+                }
                 if (this.bPress) {
                     this.unSelect();
-                    this.endElement = e.target;
+                    this.endElement = elem;
                     this.detectIndices();
                 }
             });
             day.addEventListener('mouseup', (e) => {
-                this.endElement = e.target;
+                let elem = e.target;
+                if (elem.classList.contains("day-inner")) {
+                    elem = e.target.parentElement;
+                }
+                this.endElement = elem;
                 this.setSelection();
                 this.bPress = false;
-                e.target.classList.add("active");
+                elem.classList.add("active");
             });
             day.addEventListener("click", (e) => {
-                this.day = Number(e.target.innerText);
-                this._date = e.target.getAttribute('dDate')
+                let elem = e.target;
+                if (elem.classList.contains("day-inner"))
+                    elem = e.target.parentElement;
+
+                this.day = Number(elem.innerText);
+                this._date = elem.getAttribute('dDate')
                 this.tab = this._date.split('-');
-                this._month = Number(this.tab[1]) - 1;
+
+                //this._month = Number(this.tab[1]) - 1;
                 this.getActiveDay(toDate(this._date));
-                this.startElement = e.target;
-                this.endElement = e.target;
+                this.startElement = elem;
+                this.endElement = elem;
                 this.detectIndices();
                 this.unSelect();
                 //
                 e.target.classList.add("active");
-
                 this.updateEvents(toDate(this._date));
             });
         });
@@ -707,13 +719,21 @@ class GPCalendar extends HTMLElement {
             _ev.events.push(_events[0]);
         }
         this.saveEvents();
-        this.startElement.classList.add("event");
+        let child = this.startElement.children[0];
+        child.classList.add("event");
+        child.innerText = "" + event.events[0].title;
+        if (this.startElement !== null) {
+            let index = this.startElement.getAttribute("indx");
+            this.dispatchEvent(new CustomEvent('onEvent', {
+                bubbles: true, detail: {value: event, index: index}
+            }));
+        }
     }
 
     deleteEvent(event) {
         if (event === null) return;
         event.remove();
-        this.startElement.classList.remove("event");
+        this.startElement.children[0].classList.remove("event");
         this.removeEventByTitle(event);
         this.saveEvents();
     }

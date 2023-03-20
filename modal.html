@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
           integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
@@ -11,15 +12,36 @@
 </head>
 <body>
 <gp-modal id="myModal"></gp-modal>
-
+<div class="container">
+    <button onClick="onModal();">Modal</button>
+    <div>
+        <div class="log " id="log"></div>
+        <div class="log " id="log2">Bouton: ???</div>
+    </div>
+</div>
 <script>
     let myModal = document.querySelector("#myModal");
+    let log = document.querySelector("#log");
+    let log2 = document.querySelector("#log2");
 
     myModal.addEventListener("onValidate", (e) => {
-        console.log("validate");
+        log2.innerHTML = "Bouton: validate";
+    });
+    myModal.addEventListener("onCancel", (e) => {
+        log2.innerHTML = "Bouton: cancel";
+    });
+    myModal.addEventListener("onShow", (e) => {
+        log.innerHTML = "Status: show";
+    });
+    myModal.addEventListener("onHide", (e) => {
+        log.innerHTML = "Status: hide";
     });
 
+    function onModal() {
+        myModal.toggle();
+    }
     myModal.show();
+    myModal.setPosition('center');
 
 </script>
 </body>
