@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"   integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/style.css" rel="stylesheet">
+    <script src="gp/gpmodal.js"></script>
+</head>
+<body>
+<gp-modal id="myModal"></gp-modal>
+<div class="container">
+    <button onClick="onModal();">Modal</button>
+</div>
+<script>
+    let myModal = document.querySelector("#myModal");
+    myModal.addEventListener("onValidate", (e) => {
+        console.log("Bouton: validate"); });
+    myModal.addEventListener("onCancel", (e) => {
+        console.log("Bouton: cancel"); });
+    myModal.addEventListener("onShow", (e) => {
+        console.log("Status: show");   });
+    myModal.addEventListener("onHide", (e) => {
+        console.log("Status: hide");   });
+    function onModal() {
+        myModal.toggle();
+    }
+    myModal.show();
+
+</script>
+</body>
+</html>

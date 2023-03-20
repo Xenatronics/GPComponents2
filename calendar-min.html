@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+            integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/all.min.css" rel="stylesheet">
+    <script src="gp/gpcalendar.js"></script>
+    <script defer src="gp/gpevent.js"></script>
+    <script src="gp/gppanelevent.js"></script>
+    <script defer src="gp/gpalert.js"></script>
+    <script defer src="gp/gpmodal.js"></script>
+</head>
+
+<body>
+
+<gp-modal id="modal"></gp-modal>
+<div class="container">
+    <div class="left">
+        <gp-calendar id="calendar"></gp-calendar>
+    </div>
+    <div class="right">
+        <gp-panel-event></gp-panel-event>
+    </div>
+</div>
+
+<script>
+    let modal = document.querySelector("#modal");
+    let calendar = document.querySelector("#calendar");
+    let panel = document.querySelector("gp-panel-event");
+
+
+    calendar.addEventListener("showDate", (e) => {
+        if (panel) {
+            panel.ShowDate(e.detail);
+        }
+    })
+
+    let event = null;
+    modal.addEventListener("onValidate", () => {
+        modal.hide();
+        if (event) {
+            calendar.deleteEvent(event);
+        }
+    });
+    calendar.addEventListener('onEvent', (e) => {
+        //updateEvents();
+        if (panel)
+            panel.setEvents(e.detail.value)
+        //let eventTitle = "";
+    });
+
+    panel.addEventListener("onDelete", (e) => {
+        event = e.detail.value;
+        modal.show();
+    });
+
+    panel.addEventListener("onAdd", (e) => {
+        let event = e.detail.value;
+        // on regarde si le rdv existe ou pas
+        calendar.addEvent(event);
+    });
+
+    calendar.toDay();
+    calendar.addEventListener("onSelection", (e) => {
+        console.log("start: ", e.detail.start, "end: ", e.detail.end);
+        panel.setSelection(e);
+    });
+
+</script>
+</body>
+
+</html>
